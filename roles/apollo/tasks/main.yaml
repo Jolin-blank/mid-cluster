@@ -1,0 +1,73 @@
+- name: install mysql repo
+  yum_repository:
+   name: mysql
+   baseurl: https://mirrors.tuna.tsinghua.edu.cn/mysql/yum/mysql-5.7-community-el6-x86_64/
+   enabled: yes 
+   gpgcheck: false
+   description: mysql 5.7 community
+  when:  skip_mysql
+- name: install mysql
+  yum: 
+   name: mysql-community-client
+   state: present
+  when: skip_mysql
+- name: apollo useradd
+  user: 
+     name: apollo
+     password: "{{ apollo_password |password_hash('sha512') }}"
+     update_password: always
+- name: tar  apollo
+  unarchive:
+   src: "{{ apollo_filename }}"
+   dest: /home
+   owner: apollo
+   group: apollo
+   keep_newer: yes
+- name: mkdir logs
+  file:
+    path: /logs
+    state: directory 
+    owner:  apollo
+    group:  apollo
+    mode: 0775
+- name: create databases
+  shell: mysql -u {{admin_user}} -p'{{admin_conn_password}}' -e 'source /home/apollo/sql/apolloconfigdb.sql; source /home/apollo/sql/apolloportaldb.sql;'
+  when: not skip_mysql
+- name: create databases 
+  shell: mysql -u {{admin_user}} -h {{mysql_addr}} -p'{{admin_conn_password}}' -e 'source /home/apollo/sql/apolloconfigdb.sql; source /home/apollo/sql/apolloportaldb.sql;'
+  when: skip_mysql
+- name: init configservice conf
+  template: 
+   src: service.conf.j2
+   dest: /home/apollo/adminservice/config/application-github.properties
+   owner: apollo
+   group: apollo
+- name: init adminservice conf
+  template: 
+   src: service.conf.j2
+   dest:  /home/apollo/configservice/config/application-github.properties
+   owner: apollo
+   group: apollo
+- name: init portal conf
+  template: 
+   src:  portal.conf.j2
+   dest:  /home/apollo/portal/config/application-github.properties
+   owner: apollo
+   group: apollo
+- name: start configservice 
+  shell: su - apollo -c  '/home/apollo/configservice/scripts/startup.sh'
+  environment:
+   JAVA_HOME: /usr/local/jdk1.8.0_151
+- name: start adminservice 
+  shell: su - apollo -c '/home/apollo/adminservice/scripts/startup.sh'
+  environment:
+   JAVA_HOME: /usr/local/jdk1.8.0_151
+- name: start portal 
+  shell: su - apollo -c '/home/apollo/portal/scripts/startup.sh'
+  environment:
+   JAVA_HOME: /usr/local/jdk1.8.0_151
+- name: add to autostart
+  shell: |
+    grep configservice  /etc/rc.local || echo "su - apollo -c  '/home/apollo/configservice/scripts/startup.sh'" >>/etc/rc.local
+    grep adminservice   /etc/rc.local || echo "su - apollo -c '/home/apollo/adminservice/scripts/startup.sh'"   >>/etc/rc.local
+    grep portal    /etc/rc.local || echo " su - apollo -c '/home/apollo/portal/scripts/startup.sh'"  >>/etc/rc.local

@@ -1,0 +1,6 @@
+is_master: False
+offline: false
+graylog_rpm: graylog-server-3.3.2-1.noarch.rpm
+## 默认密码 graylog_admin
+password_sha256: blwVhWyYQhf5zl3UBcLnxfXhoXVSxkSB7hH6ndUJzdQS2HOzlpnstp0slm0F4rekhuKcrVPSBLcuBEXvluL67dQEtNJvbUwv   
+replSetName: graylog

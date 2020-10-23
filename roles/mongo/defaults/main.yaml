@@ -1,0 +1,2 @@
+enable_replication: true
+replSetName: graylog

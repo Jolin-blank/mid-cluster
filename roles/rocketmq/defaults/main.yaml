@@ -1,0 +1,5 @@
+offline: true
+rocketmq_filename: rocketmq-all-4.6.0-bin-release.tar.gz 
+rocketmq_version: rocketmq-all-4.6.0-bin-release
+rocketmq_cosole_filename: rocketmq-console-ng-1.0.1.jar
+rocketmq_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/rocketmq/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"

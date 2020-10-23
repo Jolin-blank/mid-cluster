@@ -1,0 +1,7 @@
+app_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/{{user}}/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"
+pinpoint_filename: pinpoint-2.0.2.tar.gz
+log_private_key: log_rsa
+log_known_hosts: log_known_hosts
+jks_private_key: jks_rsa
+jks_known_hosts: jks_known_hosts
+devops_public_key: devops_authorized_keys

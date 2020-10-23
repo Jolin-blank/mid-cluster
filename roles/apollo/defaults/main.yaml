@@ -1,0 +1,4 @@
+apollo_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/apollo/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"
+apollo_filename: apollo-v1.7.1.tar.gz
+skip_mysql: false
+mysql_addr: 127.0.0.1

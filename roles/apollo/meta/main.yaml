@@ -1,0 +1,10 @@
+dependencies: 
+  - role: jdk  
+  - role: mysql 
+    vars: 
+      - admin_user: apolloadm 
+      - admin_conn_password:  "{{ lookup('password', '/root/.{{inventory_hostname}}/mysql/{{admin_user}}/passwd  chars=ascii_letters,digits,hexdigits,punctuatio') }}"
+      - app_user: apolloapp 
+      - app_conn_password:  "{{ lookup('password', '/root/.{{inventory_hostname}}/mysql/{{app_user}}/passwd  chars=ascii_letters,digits,hexdigits,punctuatio') }}"
+    when: not skip_mysql 
+

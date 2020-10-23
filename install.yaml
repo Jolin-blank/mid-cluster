@@ -1,0 +1,84 @@
+- hosts: webhis
+  gather_facts: false
+  roles:
+  - { role: web,user: "webhis",group: "hcapp",tags: webhis }
+- hosts: webadm
+  gather_facts: false
+  roles:
+  - { role: web,user: "webadm",group: "hcapp",tags: webadm }
+- hosts: webpay
+  gather_facts: false
+  roles:
+  - { role: web,user: "webpay",group: "hcapp",tags: webpay }
+- hosts: webfin
+  gather_facts: false
+  roles:
+  - { role: web,user: "webfin",group: "hcapp",tags: webfin }
+- hosts: dubbo 
+  gather_facts: false
+  roles:
+  - { role: app,user: "dubbo",group: "hcapp", tags: dubbo}
+- hosts: spring
+  gather_facts: false
+  roles:
+  - { role: app,user: "spring",group: "hcapp", tags: spring}
+- hosts: nginx
+  roles:
+  - { role: nginx, tags: [lvs,nginx]}
+- hosts: rocketmq
+  gather_facts: false
+  roles:
+  - { role: rocketmq, tags: rocketmq}
+- hosts: zookeeper
+  gather_facts: false
+  roles:
+  - { role: zookeeper, tags: zookeeper}
+- hosts: 3redis
+  roles:
+  - { role: redis, tags: 3redis}
+- hosts: redis
+  gather_facts: false
+  roles:
+  - { role: redis, tags: redis}
+- hosts: netdata
+  roles:
+  - { role: netdata, tags: [netdata, prometheus]}
+- hosts: mysql
+  gather_facts: false
+  roles:
+  - { role: mysql, tags: mysql }
+- hosts: jdk
+  gather_facts: false
+  roles:
+  - { role: jdk, tags: jdk}
+- hosts: apollo
+  gather_facts: false
+  roles:
+  - { role: apollo ,tags: apollo }
+- hosts: fastdfs
+  roles:
+  - { role: fastdfs ,tags: fastdfs}
+- hosts: keepalived
+  gather_facts: false
+  roles:
+  - { role: keepalived ,tags: [lvs,fastdfs] }
+- hosts: kafka
+  gather_facts: false
+  roles:
+  - { role: kafka ,tags: kafka }
+- hosts: elasticsearch
+  gather_facts: false
+  roles:
+  - { role: elasticsearch , tags: elasticsearch }
+- hosts: prometheus
+  gather_facts: false
+  roles: 
+  - { role: prometheus, tags: prometheus}
+- hosts: mongodb
+  gather_facts: false 
+  roles: 
+  - { role: mongo, tags: mongodb}
+- hosts: graylog
+  gather_facts: false
+  roles: 
+  - { role: graylog, tags: graylog}

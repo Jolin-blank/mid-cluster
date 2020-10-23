@@ -1,0 +1,10 @@
+- name: set config id
+  shell: sed -i "/dLegerSelfId/s/=.*/=$(cat /opt/rocketmq/conf/dledger-hc/brokerA.conf |grep  dLegerPeers |egrep -o n[0-2]-`hostname -I` |awk -F '-' '{print$1}')/"  /opt/rocketmq/conf/dledger-hc/brokerA.conf
+- name: start rocketmq namesrv
+  shell: su - rocketmq -c ' nohup  /opt/rocketmq/bin/mqnamesrv  &' 
+- name: start rocketmq broker
+  shell: su - rocketmq -c 'nohup /opt/rocketmq/bin/mqbroker -c /opt/rocketmq/conf/dledger-hc/brokerA.conf & '
+- name: start rocketmq console 
+  shell: su - rocketmq -c 'nohup  java -jar  /home/rocketmq/rocketmq-console-ng-1.0.1.jar  &'
+- name: add rocketmq-cosole auto-start
+  shell: grep rocketmq-console-ng-1.0.1.jar /etc/rc.local || echo "su - rocketmq -c 'nohup  java -jar  /home/rocketmq/rocketmq-console-ng-1.0.1.jar  &'" >>/etc/rc.local

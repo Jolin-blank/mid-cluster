@@ -1,0 +1,4 @@
+prometheus_filename: prometheus-2.21.0.linux-amd64.tar.gz
+prometheus_version:  prometheus-2.21.0.linux-amd64
+prometheus_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/prometheus/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"
+grafana_rpm: grafana-7.1.5-1.x86_64.rpm

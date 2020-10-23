@@ -1,0 +1,25 @@
+- name: install keepalived
+  yum:
+    name: keepalived
+    state: present
+- name: init keepalived master config
+  vars:
+    state: MASTER
+    priority: 100
+  template:
+    src: keepalived.conf.j2
+    dest:  /etc/keepalived/keepalived.conf
+  delegate_to: "{{play_hosts[0]}}"
+- name: init keepalived backup config
+  vars:
+    state: BACKUP
+    priority: 50
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+  delegate_to: "{{play_hosts[1]}}"
+- name: start keepalived
+  service:
+    name: keepalived
+    state: started
+    enabled: yes

@@ -1,0 +1,61 @@
+- name: fdfs useradd
+  user: 
+   name: fdfs 
+   password: "{{ fdfs_password |password_hash('sha512') }}"
+   update_password: always
+- name: mkdir storage
+  with_items:
+   - tracker
+   - storage/data
+   - storage_data
+  file:
+   path: /data/fdfs/{{item}}
+   state: directory
+   owner: fdfs
+   group: fdfs
+- name: tar fdfs rpm
+  unarchive: 
+   src:  "{{ rpm_filename }}"
+   dest: /root
+- name: install fdfs
+  shell: cd /root/fdfs/ && yum install *.rpm -y
+  ignore_errors: yes
+- name: init trackerd conf
+  template: 
+   src: trackerd.conf.j2
+   dest: /etc/fdfs/tracker.conf
+- name: init storaged conf 
+  template:
+   src: storaged.conf.j2
+   dest: /etc/fdfs/storage.conf
+- name: get fdfs_trackerd process
+  shell: ps aux |grep fdfs_trackerd |grep -v grep 
+  register: trackerd_status
+  ignore_errors: yes
+- name: get fdfs_storaged process
+  shell: ps aux |grep fdfs_storaged |grep -v grep
+  register: storaged_status
+  ignore_errors: yes
+- name: start fdfs_trackerd
+  shell: su - fdfs -c '/etc/init.d/fdfs_trackerd start' 
+  when: trackerd_status.rc != 0
+- name: start fdfs_storaged
+  shell: su - fdfs -c '/etc/init.d/fdfs_storaged start'
+  when: storaged_status.rc != 0
+- name: add auto start
+  shell: |
+    grep  fdfs_trackerd /etc/rc.local || echo "su - fdfs -c '/etc/init.d/fdfs_trackerd start'" >> /etc/rc.local
+    grep  fdfs_storaged /etc/rc.local || echo "su - fdfs -c '/etc/init.d/fdfs_storaged start'" >> /etc/rc.local
+- name: copy realserver scripts
+  template: 
+   src: realserver.j2
+   dest: /etc/init.d/realserver
+   mode: 0755
+  when: realserver 
+- name: start realserver 
+  service:
+   name: realserver 
+   state: started
+   enabled: yes
+  when: realserver 
+

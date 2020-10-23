@@ -1,0 +1,55 @@
+- name: install mysql repo
+  yum_repository:
+   name: mysql
+   baseurl: https://mirrors.tuna.tsinghua.edu.cn/mysql/yum/mysql-5.7-community-el6-x86_64/
+   enabled: yes 
+   gpgcheck: false
+   description: mysql 5.7 community 
+  when:  not offline 
+- name: install mysql
+  yum: 
+   name: mysql-community-server
+   state: present
+- name: mkdir mysql_dir_tmp
+  file:
+   path: /data/mysql/tmp
+   state: directory
+   owner: mysql
+   group: mysql
+- name: mkdir mysql_dir_run
+  file:
+   path: /data/mysql/run
+   state: directory
+   owner: mysql
+   group: mysql
+- name: mkdir mysql_dir_run
+  file:
+   path: /data/mysql/log/iblog
+   state: directory
+   owner: mysql
+   group: mysql
+- name: is-mysqld.pid
+  shell: cat /var/run/mysqld/mysqld.pid
+  register: status
+  ignore_errors: true
+- name: init mysql conf
+  template:
+   src: my.cnf.j2
+   dest: /etc/my.cnf
+  when: status.rc != 0
+- name: start mysqld
+  service: 
+   name: mysqld
+   state: started 
+   enabled: yes 
+- name: get init_conn_password
+  shell: grep "A temporary password" /data/mysql/log/mysqld.log  |awk  '{print$NF}' 
+  register: init_password
+- name: update root_conn_password
+  shell:  |
+     mysql -u root -p'{{init_password.stdout}}' --connect-expired-password  -e "set password='{{root_conn_password}}';
+     grant all on *.* to {{admin_user}}@'{{allow_hosts}}' identified by '{{admin_conn_password}}';
+     grant select,update,delete,insert on *.* to {{app_user}}@'{{allow_hosts}}' identified by'{{app_conn_password}}'"
+   
+
+  

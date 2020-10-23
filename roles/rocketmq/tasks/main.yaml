@@ -1,0 +1,51 @@
+- name: rocketmq useradd
+  user: 
+     name: rocketmq 
+     password: "{{ rocketmq_password |password_hash('sha512') }}"
+     update_password: always
+- name: unzip  rocketmq
+  unarchive:
+   src: "{{ rocketmq_filename }}"
+   dest: /opt
+   owner: rocketmq
+   group: rocketmq
+   keep_newer: yes
+- name: create link
+  file:
+   src: /opt/{{ rocketmq_version }}
+   path: /opt/rocketmq
+   state: link
+- name: mkdir dleger-hc
+  file:
+   path: /opt/rocketmq/conf/dledger-hc
+   state: directory
+   owner: rocketmq
+   group: rocketmq
+  notify:
+   - set config id
+   - start rocketmq namesrv
+   - start rocketmq broker
+- name: init config
+  template:
+   src: rocketmq.conf.j2
+   dest: /opt/rocketmq/conf/dledger-hc/brokerA.conf
+   owner: rocketmq
+   group: rocketmq
+- name: export env
+  shell: |
+   grep ROCKETMQ_HOME /etc/profile || echo 'export ROCKETMQ_HOME=/opt/rocketmq'  >>/etc/profile
+   grep ROCKETMQ_HOME/bin /etc/profile ||  echo 'export PATH=$ROCKETMQ_HOME/bin:$PATH'  >>/etc/profile
+- name: poweron start 
+  shell: |
+   grep mqnamesrv /etc/rc.local || echo "su  rocketmq -c 'nohup  /opt/rocketmq/bin/mqnamesrv  &'"  >> /etc/rc.local 
+   grep mqbroker /etc/rc.local  || echo "su  rocketmq -c  'nohup  /opt/rocketmq/bin/mqbroker -c /opt/rocketmq/conf/dledger-hc/brokerA.conf &'"  >>/etc/rc.local
+- name: copy console-file 
+  copy: 
+   src: "{{ rocketmq_cosole_filename }}"
+   dest: /home/rocketmq
+   owner: rocketmq
+   group: rocketmq
+  run_once: true
+  notify:
+   - start rocketmq console 
+   - add rocketmq-cosole auto-start  

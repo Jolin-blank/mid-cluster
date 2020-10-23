@@ -1,0 +1,34 @@
+- name: add hosts 
+  shell: grep  mirrors.gzhc365.com /etc/hosts || echo "175.6.21.210   mirrors.gzhc365.com"  >>/etc/hosts
+  when: not offline
+- name: install haici repo
+  yum_repository:
+   baseurl: http://mirrors.gzhc365.com
+   enabled: yes 
+   gpgcheck: false
+   name: haici
+   description: haici inside yum repo
+  when: not offline
+- name: unzip netdata dependence
+  unarchive: 
+   src: "{{ rpm_name }}"
+   dest: /root
+  when: offline
+- name: install netdata online
+  yum: 
+   name: "{{ netdata_version }}"
+   state: present
+  when: not offline
+- name: install netdata offline
+  shell: cd /root/rpm && yum install *.rpm  -y
+  ignore_errors: yes
+  when: offline
+- name: update netdata config
+  shell: sed -i '/bind to/s/localhost/0.0.0.0/' /etc/netdata/netdata.conf 
+- name: start netdata
+  service: 
+   name: netdata
+   state: restarted
+   enabled: yes
+
+     

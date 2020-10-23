@@ -1,0 +1,3 @@
+realserver: false
+fdfs_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/fdfs/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"
+rpm_filename: fastdfs-6.0.6.tar.gz

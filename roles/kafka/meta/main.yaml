@@ -1,0 +1,4 @@
+dependencies: 
+  - role: jdk
+  - role: zookeeper
+    when: not skip_zookeeper

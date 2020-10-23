@@ -1,0 +1,6 @@
+cpu_core: 4
+offline: false
+nginx_version: nginx-1.18.0-1
+stsweb_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/stsweb/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"
+user: stsweb
+realserver: false

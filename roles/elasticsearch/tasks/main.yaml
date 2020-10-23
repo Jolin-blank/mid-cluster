@@ -1,0 +1,26 @@
+- name: copy rpm
+  copy: 
+   src: "{{ elasticsearch_filename }}"
+   dest: /root
+  when: offline 
+- name: install  elasticsearch
+  environment: 
+    JAVA_HOME: /usr/local/jdk1.8.0_151
+  yum: 
+   name: /root/{{elasticsearch_filename}}
+   state: present
+- name: init elasticsearch
+  template:
+   src: elasticsearch.yml.j2
+   dest: /etc/elasticsearch/elasticsearch.yml
+- name: increase nofile and nproc
+  shell: |
+    grep elasticsearch  /etc/security/limits.conf  || echo -e "elasticsearch  soft nofile 65535\nelasticsearch  hard nofile 65535" >>  /etc/security/limits.conf
+    grep elasticsearch  /etc/security/limits.d/90-nproc.conf || echo -e "elasticsearch soft  nproc     4096" >> /etc/security/limits.d/90-nproc.conf
+- name: set java_home to start scripts
+  shell: grep  profile  /etc/init.d/elasticsearch   || sed -i '21a \. /etc/profile' /etc/init.d/elasticsearch
+- name: start elasticsearch
+  service: 
+   name: elasticsearch
+   state: started 
+   enabled: yes

@@ -1,0 +1,13 @@
+ - name: install jdk 
+   unarchive: 
+    src: "{{ java_filename }}" 
+    dest: /usr/local
+    keep_newer: yes
+   when: offline 
+ - name: set env
+   shell: |
+      grep JAVA_HOME /etc/profile  || echo 'export JAVA_HOME=/usr/local/{{ java_version }}' >>/etc/profile
+      grep JRE_HOME /etc/profile  || echo 'export JRE_HOME=/usr/local/{{ java_version }}/jre' >>/etc/profile
+      grep CLASSPATH /etc/profile || echo 'export CLASSPATH=$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH' >>/etc/profile
+      grep JAVA_HOME/bin  /etc/profile || echo 'PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH'  >>/etc/profile
+      

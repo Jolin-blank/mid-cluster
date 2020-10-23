@@ -1,0 +1,7 @@
+admin_user: qzjadm
+app_user: qzjapp
+root_conn_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/mysql/root/passwd  length=12') }}"
+admin_conn_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/mysql/{{admin_user}}/passwd length=12') }}"
+app_conn_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/mysql/{{app_user}}/passwd  length=12') }}"
+allow_hosts: "localhost"
+offline: false

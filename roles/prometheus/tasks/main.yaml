@@ -1,0 +1,42 @@
+- name: prometheus useradd
+  user: 
+     name: prometheus
+     password: "{{ prometheus_password |password_hash('sha512') }}"
+     update_password: always
+- name: tar  prometheus
+  unarchive:
+   src: "{{ prometheus_filename }}"
+   dest: /opt
+   owner: prometheus
+   group: prometheus
+   keep_newer: yes
+- name: create link
+  file:
+   src: /opt/{{ prometheus_version }}
+   path: /opt/prometheus
+   state: link
+- name: init config
+  template: 
+   src:   prometheus.yml.j2
+   dest:  /opt/prometheus/prometheus.yml
+   owner: prometheus
+   group: prometheus
+- name: ntpdate 
+  shell: ntpdate ntp1.aliyun.com 
+- name: start prometheus
+  shell: su - prometheus -c 'nohup /opt/prometheus/prometheus --config.file /opt/prometheus/prometheus.yml  --web.enable-lifecycle  &' 
+- name: add to autostart 
+  shell: grep prometheus  /etc/rc.local || echo "su - prometheus -c 'nohup /opt/prometheus/prometheus --config.file /opt/prometheus/prometheus.yml  --web.enable-lifecycle  &'"  >> /etc/rc.local
+- name: copy grafana
+  copy: 
+   src: "{{ grafana_rpm }}"
+   dest: /root
+- name: install grafana
+  yum:
+   name: /root/grafana-7.1.5-1.x86_64.rpm
+   state: present 
+- name: start grafana
+  service: 
+   name: grafana-server
+   state: started
+   enabled: yes

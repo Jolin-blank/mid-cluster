@@ -1,0 +1,40 @@
+- name: kafka useradd
+  user: 
+     name: kafka 
+     password: "{{ kafka_password |password_hash('sha512') }}"
+     update_password: always
+- name: tar  kafka
+  unarchive:
+   src: "{{ kafka_filename }}"
+   dest: /opt
+   owner: kafka
+   group: kafka
+   keep_newer: yes
+- name: create link
+  file:
+   src: /opt/{{ kafka_version }}
+   path: /opt/kafka
+   state: link
+- name: mkdir kafka-data
+  file:
+   path: /opt/kafka-logs
+   state: directory
+   owner: kafka
+   group: kafka
+- name: init kafka config
+  template: 
+   src: server.properties.j2 
+   dest: /opt/kafka/config/server.properties
+   owner: kafka
+   group: kafka
+- name: get kafka statua
+  shell: ps aux |grep server.properties  |grep -v grep
+  register: status
+  ignore_errors: true
+- name: start kafka
+  shell: su - kafka -c 'nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties &'
+  when: status.rc != 0
+- name: add autostart
+  shell: grep  kafka-server-start  /etc/rc.local ||  echo "su - kafka -c 'nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/conf/server.properties &'" >>/etc/rc.local
+
+ 

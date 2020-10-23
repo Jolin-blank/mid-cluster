@@ -1,0 +1,8 @@
+- name: copy tsar
+  copy:
+   src:  "{{ tsar_filename }}"
+   dest:  /root
+- name: install tsar
+  yum: 
+   name: /root/{{tsar_filename}}
+   state: present

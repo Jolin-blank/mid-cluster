@@ -1,0 +1,3 @@
+cluster_name:  graylog
+offline: true
+elasticsearch_filename: elasticsearch-oss-6.8.12.rpm

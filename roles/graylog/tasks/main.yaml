@@ -1,0 +1,43 @@
+- name: install haici repo
+  yum_repository:
+   baseurl: http://mirrors.gzhc365.com
+   enabled: yes 
+   gpgcheck: false
+   name: haici
+   description: haici inside yum repo
+  when: not offline
+- name: add hosts
+  shell: grep mirrors.gzhc365.com /etc/hosts || echo "175.6.21.210   mirrors.gzhc365.com"  >>/etc/hosts
+- name: copy graylog-server rpm 
+  copy: 
+   src:  "{{ graylog_rpm }}"
+   dest: /root
+  when: offline
+- name: install graylog-server offline
+  yum: 
+   name: /root/{{graylog_rpm}}
+   state: present
+  when: offline
+- name: install graylog-server
+  yum: 
+   name: graylog-server
+   state: present
+- name: init  master config
+  template: 
+   src: server.conf.j2
+   dest: /etc/graylog/server/server.conf
+- name: init  master config
+  vars:  
+    is_master: True
+  template: 
+   src: server.conf.j2
+   dest: /etc/graylog/server/server.conf
+  delegate_to: "{{play_hosts[0]}}"
+- name: update java bin
+  shell: sed -i  "s@JAVA=/usr/bin/java@JAVA=/usr/local/jdk1.8.0_151/bin/java@" /etc/sysconfig/graylog-server
+- name: start graylog-server
+  service: 
+   name: graylog-server
+   state: restarted
+   enabled: yes
+

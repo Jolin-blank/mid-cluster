@@ -1,0 +1,96 @@
+- name: hcapp groupadd
+  group: 
+    name: "{{ group }}"
+- name:  useradd
+  user: 
+    name: "{{ user }}"
+    groups: "{{ group }}"
+    password: "{{ web_password |password_hash('sha512') }}"
+    update_password: always
+- name: mkdir logs
+  file:
+    path: /logs
+    state: directory 
+    group: "{{ group }}"
+    mode: 0775
+- name: install pinpoint
+  unarchive: 
+    src: "{{ pinpoint_filename }}"
+    dest: /home/{{user}}
+    owner: "{{ user }}"
+    group: "{{ user }}"
+- name: install tomcat
+  unarchive:
+    src: "{{ tomcat_filename }}"
+    dest: /usr/local
+    owner: "{{ user }}"
+    group: "{{ group }}"
+- name: mkdir userhome .ssh
+  file: 
+   path: /home/{{user}}/.ssh
+   state: directory 
+   owner: "{{ user }}"
+   group: "{{ user }}"
+   mode: 0700
+- name: add jks private key
+  copy:
+   src: "{{ jks_private_key }}"
+   dest: /home/{{user}}/.ssh/id_rsa
+   owner: "{{ user }}"
+   group: "{{ user }}"
+   mode: 0600
+- name: add public_key
+  copy:
+   src: "{{ devops_public_key }}"
+   dest: /home/{{user}}/.ssh/authorized_keys
+   owner: "{{user}}"
+   group: "{{user}}"
+   mode: 0600
+- name: add know_hosts
+  copy: 
+   src: "{{ jks_known_hosts }}"
+   dest: /home/{{user}}/.ssh/know_hosts
+   owner: "{{user}}"
+   group: "{{user}}"
+- name: copy hips.sh to userhome
+  copy:
+   src: hips.sh 
+   dest: /home/{{user}}
+   owner: "{{user}}"
+   group: "{{user}}"
+   mode: 0750
+- name: copy rollback.sh to userhome
+  copy:
+   src: rollback.sh 
+   dest: /home/{{user}}
+   owner: "{{user}}"
+   group: "{{user}}"
+   mode: 0750
+- name: copy ido.sh to root 
+  copy:
+   src: ido.sh
+   dest: /root
+   mode: 0750
+- name: copy apps_bk.sh to root 
+  copy:
+   src: apps_bk.sh
+   dest: /root
+   mode: 0750
+- name: mkdir root .ssh
+  file: 
+   state: directory 
+   path: /root/.ssh
+   mode: 0700
+- name: add hcit private key
+  copy:
+   src: "{{ log_private_key }}"
+   dest: /root/.ssh/id_rsa
+   owner: root
+   group: root
+   mode: 0600
+- name: add hcit know_hosts
+  copy:
+   src: "{{ log_known_hosts }}"
+   dest: /root/.ssh/know_hosts
+
+  

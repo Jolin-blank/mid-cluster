@@ -1,0 +1,5 @@
+redis_user_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/redis/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"
+redis_conn_password: "{{ lookup('password', '/root/.{{play_hosts[0]}}/redis/conpasswd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"
+redis_filename: redis-5.0.4.tar.gz
+redis_version: redis-5.0.4
+redis_port: 7000

@@ -1,0 +1,33 @@
+- name: install haici repo
+  yum_repository:
+   baseurl: https://mirrors.aliyun.com/mongodb/yum/redhat/$releasever/mongodb-org/4.2/x86_64/
+   enabled: yes 
+   gpgcheck: false
+   name: mongo
+   description: MongoDB 4.2 Repository
+- name: install mongo
+  yum: 
+   name: mongodb-org
+   state: present
+- name: init mongo
+  template: 
+   src: mongod.conf.j2
+   dest: /etc/mongod.conf
+- name: start mongo
+  service: 
+   name: mongod
+   state: started
+   enabled: yes
+- name: create mongo relicaset
+  shell: |
+    mongo << EOF
+    rs.initiate( {
+    _id : "{{replSetName}}",
+    members: [
+      { _id: 0, host: "{{ play_hosts[0]}}:27017" },
+      { _id: 1, host: "{{ play_hosts[1]}}:27017" },
+      { _id: 2, host: "{{ play_hosts[2]}}:27017" }
+    ]
+    })
+    EOF
+  run_once: true

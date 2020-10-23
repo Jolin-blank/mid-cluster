@@ -1,0 +1,4 @@
+offline: true
+zookeeper_filename: zookeeper-3.4.14.tar.gz
+zookeeper_version: zookeeper-3.4.14
+zookeeper_password: "{{ lookup('password', '/root/.{{inventory_hostname}}/zookeeper/passwd chars=ascii_letters,digits,hexdigits,punctuation length=12') }}"

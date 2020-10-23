@@ -1,0 +1,15 @@
+- name: start redis
+  shell: su - redis -c 'redis-server /opt/redis/redis.conf'
+- name: create redis-cluster
+  shell: echo yes | redis-cli --cluster create  {{play_hosts[0]}}:{{redis_port}}   {{play_hosts[1]}}:{{redis_port}}   {{play_hosts[2]}}:{{redis_port}}   {{play_hosts[3]}}:{{redis_port}}   {{play_hosts[4]}}:{{redis_port}}   {{play_hosts[5]}}:{{redis_port}} --cluster-replicas 1  -a '{{ redis_conn_password }}' 
+  run_once: true 
+- name: start 3node redis
+  shell: |
+     su - redis -c 'redis-server /opt/redis/hcredis-cluster/7000/redis.conf'
+     su - redis -c 'redis-server /opt/redis/hcredis-cluster/7001/redis.conf'
+- name: create 3node redis-cluster
+  vars:
+   - redis_port1: 7000
+   - redis_port2: 7001
+  shell: echo yes | redis-cli --cluster create  {{play_hosts[0]}}:{{redis_port1}}   {{play_hosts[0]}}:{{redis_port2}}   {{play_hosts[1]}}:{{redis_port1}}   {{play_hosts[1]}}:{{redis_port2}}   {{play_hosts[2]}}:{{redis_port1}}   {{play_hosts[2]}}:{{redis_port2}} --cluster-replicas 1  -a '{{ redis_conn_password }}' 
+  run_once: true

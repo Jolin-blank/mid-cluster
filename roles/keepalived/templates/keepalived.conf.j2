@@ -1,0 +1,78 @@
+global_defs { 
+   router_id {{ router_id }}
+} 
+vrrp_instance VI_1 { 
+    state   {{ state }}         
+    interface eth0
+    virtual_router_id 65 
+    priority  {{ priority }}
+    advert_int 1 
+    authentication { 
+        auth_type PASS 
+        auth_pass {{ auth_pass }}
+    } 
+    virtual_ipaddress { 
+        {{ vip }}
+    } 
+} 
+{%if 'nginx' in groups %}
+virtual_server {{ vip }} 80 {
+    delay_loop 6            
+    lb_algo wrr              
+    lb_kind DR
+    nat_mask 255.255.255.0               
+    persistence_timeout 0         
+    protocol TCP  
+   {% for host in groups['nginx'] %}
+   real_server {{ hostvars[host]['ansible_facts']['eth0']['ipv4']['address'] }}  80 {
+        weight 3 
+        TCP_CHECK { 
+        connect_timeout 10        
+        nb_get_retry 3 
+        delay_before_retry 3 
+        connect_port  80 
+        } 
+   }
+{%endfor%}
+}
+virtual_server {{ vip }} 443 {
+    delay_loop 6            
+    lb_algo wrr              
+    lb_kind DR
+    nat_mask 255.255.255.0               
+    persistence_timeout 0         
+    protocol TCP  
+   {% for host in groups['nginx'] %}
+   real_server {{ hostvars[host]['ansible_facts']['eth0']['ipv4']['address'] }}  443 {
+        weight 3 
+        TCP_CHECK { 
+        connect_timeout 10        
+        nb_get_retry 3 
+        delay_before_retry 3 
+        connect_port  443
+        } 
+   }
+{%endfor%}
+}
+{%endif%}
+{%if 'fastdfs' in groups%}
+virtual_server {{ vip }} 22122 {
+    delay_loop 6
+    lb_algo wrr
+    lb_kind DR
+    nat_mask 255.255.255.0
+    persistence_timeout 0
+    protocol TCP
+{% for host in groups['fastdfs']  %}
+   real_server {{ hostvars[host]['ansible_facts']['eth0']['ipv4']['address'] }}   22122 {
+        weight 3
+        TCP_CHECK {
+        connect_timeout 10
+        nb_get_retry 3
+        delay_before_retry 3
+        connect_port  22122
+        }
+   }
+{%endfor%}
+}
+{%endif%}

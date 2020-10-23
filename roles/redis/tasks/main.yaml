@@ -1,0 +1,76 @@
+- name: redis useradd
+  user: 
+     name: redis 
+     password: "{{ redis_user_password |password_hash('sha512') }}"
+     update_password: always
+- name: tar redis
+  unarchive: 
+    src: "{{ redis_filename }}"
+    dest: /opt
+    group: redis
+    owner: redis
+- name:  create softlink
+  file: 
+   src: /opt/{{ redis_version }}
+   path: /opt/redis
+   state: link
+- name: is-redis install
+  shell: which redis-cli
+  register: status
+  ignore_errors: true
+- name: install redis
+  shell: cd /opt/redis/ && make && make install
+  when: status.rc != 0  
+- name: mkdir hcredis-cluster 
+  with_items:
+  - 7000
+  - 7001
+  file:
+   path: /opt/redis/hcredis-cluster/{{item}}
+   state: directory
+   group: redis
+   owner: redis
+  when:  play_hosts|length == 3
+- name: init redis-config1
+  vars:
+   redis_port: 7000
+  template: 
+   src: redis.conf.j2
+   dest: /opt/redis/hcredis-cluster/7000/redis.conf
+   group: redis
+   owner: redis
+   mode: 0640
+  when:  play_hosts|length == 3
+- name: init redis-config2
+  vars:
+   redis_port: 7001
+  template: 
+   src: redis.conf.j2
+   dest: /opt/redis/hcredis-cluster/7001/redis.conf
+   group: redis
+   owner: redis
+   mode: 0640
+  when:  play_hosts|length  == 3
+  notify:
+   - start 3node redis
+   - create 3node redis-cluster
+- name: init redis-config
+  template: 
+   src: redis.conf.j2
+   dest: /opt/redis/redis.conf 
+   force: yes
+   group: redis
+   owner: redis
+   mode: 0640
+  when:  play_hosts|length == 6
+  notify:
+   - start redis
+   - create redis-cluster
+- name: redis auto-start
+  shell: grep redis-server /etc/rc.local || echo "su - redsi -c 'redis-server /opt/redis/redis.conf' " >>/etc/rc.local
+  when: play_hosts|length  == 6
+- name: redis 3node auto-start
+  shell: |
+    grep  7000/redis.conf /etc/rc.local ||  echo "su - redis -c 'redis-server /opt/redis/hcredis-cluster/7000/redis.conf' " >>/etc/rc.local
+    grep  7001/redis.conf /etc/rc.local ||  echo "su - redis -c 'redis-server /opt/redis/hcredis-cluster/7001/redis.conf' " >>/etc/rc.local
+  when: play_hosts|length  == 3

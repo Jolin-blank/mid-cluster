@@ -1,0 +1,49 @@
+- name: install nginx repo
+  copy: 
+   src: nginx.repo
+   dest: /etc/yum.repos.d
+  when: not offline
+- name: copy file to nginx
+  copy:
+   src:  '{{nginx_version}}.el{{ansible_distribution_major_version}}.ngx.x86_64.rpm'
+   dest: /root
+  when:  offline 
+- name: install nginx
+  yum: 
+   name: nginx
+   state: present
+  when: not offline
+- name: install nginx offline
+  yum: 
+   name: /root/{{nginx_version}}.el{{ansible_distribution_major_version}}.ngx.x86_64.rpm
+   state: present
+  when: offline
+- name: init nginx
+  template:
+   src: nginx.conf.j2
+   dest: /etc/nginx
+- name: start nginx
+  service: 
+   name: nginx
+   state: started
+   enabled: yes
+- name: stsweb useradd 
+  user:
+   name: "{{ user }}"
+   password: "{{ stsweb_password|password_hash('sha512')}}"
+   update_password: always
+- name: copy realserver start scripts
+  template: 
+    src: realserver.j2
+    dest: /etc/init.d/realserver
+    mode: 0755
+  when: realserver  
+- name: start realserver
+  service: 
+   name: realserver
+   state: started
+   enabled: yes
+  when: realserver
+   
+
+
